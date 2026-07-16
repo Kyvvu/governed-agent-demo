@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Governed Demo Guard
+#
+# Two security policies for the Invoice / Expense assistant demo — the kind of
+# governance a stateless per-call filter cannot express. They demonstrate two
+# distinct, history-aware controls:
+#
+#   1. Financial exfiltration guard (tainted_path_block) — block an external
+#      send once financial invoice data has been read in the same task
+#      (read -> send is the breach). Path/sequence-dependent.
+#   2. Single-send guard (execution_max_steps) — allow at most one call of the
+#      send_email tool per task ("you can only send once"). Count-dependent,
+#      scoped to the specific tool via step_name.
+#
+# Assign this manifest to agent_key "governed-demo-agent". With these policies
+# loaded (and KV_POLICY_FAIL_MODE=closed for deny-by-default before assignment),
+# the agent runs "almost catch-all allow, minus exactly what these rules catch".
+name: "Governed Demo Guard"
+version: "1.0.0"
+policies:
+  - name: "Block external send after financial invoice read"
+    rule_type: tainted_path_block
+    params:
+      taint_step_type: step.resource
+      taint_verb: GET
+      taint_property_filter:
+        data.classification: financial
+      target_step_types: ["step.resource"]
+      target_verb: POST
+    severity: critical
+    scope: step_execution
+  - name: "At most one external send per task"
+    rule_type: execution_max_steps
+    params:
+      step_type: step.resource
+      step_name: send_email
+      max_steps: 1
+    severity: critical
+    scope: step_execution
