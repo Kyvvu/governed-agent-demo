@@ -1,0 +1,191 @@
+name: langgraph-video-demo
+version: "1.0"
+description: |
+  Behavior template for the governed Invoice / Expense assistant demo.
+
+  This is a verbatim copy of the built-in Kyvvu `langgraph` template with ONE
+  rule added (`tool_get_invoice`, placed before the generic `tool_read`). That
+  rule tags the `get_invoice` tool call with `data.classification: financial`,
+  which is the taint source the `tainted_path_block` policy keys on.
+
+  Why a template file and not a tool argument: step `properties` are populated
+  only from the template match — the LangGraph/LangChain callback handler does
+  not forward a tool's metadata/tags into the step — so classification must be
+  attached here. The agent points `KV_TEMPLATE_LOCATION` at this file, which
+  replaces the built-in template wholesale (hence the full copy).
+
+  Rules are first-match-wins; order matters.
+
+rules:
+
+  # ── LangGraph-specific rules (checked first) ────────────────────────────
+
+  - id: interrupt_gate
+    description: LangGraph interrupt() — human-in-the-loop breakpoint
+    match:
+      event: "on_interrupt"
+    behavior:
+      step_type: "step.gate"
+      step_name: "{{ name | default('interrupt') }}"
+
+  # ── Task lifecycle ──────────────────────────────────────────────────────────
+
+  - id: chain_start
+    description: Top-level chain begins — opens a new task
+    match:
+      event: "on_chain_start"
+    behavior:
+      step_type: "task.start"
+      step_name: "{{ name | default('chain') }}"
+
+  - id: chain_end
+    description: Top-level chain completes — closes the task
+    match:
+      event: "on_chain_end"
+    behavior:
+      step_type: "task.end"
+      step_name: "{{ name | default('chain') }}"
+
+  - id: chain_error
+    description: Chain raised an exception — task failed
+    match:
+      event: "on_chain_error"
+    behavior:
+      step_type: "task.error"
+      step_name: "{{ name | default('chain') }}"
+
+  - id: agent_finish
+    description: Agent produces its final answer — closes the task
+    match:
+      event: "on_agent_finish"
+    behavior:
+      step_type: "task.end"
+      step_name: "{{ name | default('agent') }}"
+
+  # ── User message I/O ──────────────────────────────────────────────────────
+
+  - id: message_in
+    description: User input received at chain start
+    match:
+      event: "on_message_in"
+    behavior:
+      step_type: "step.message"
+      verb: "GET"
+      step_name: "{{ name | default('user_input') }}"
+
+  - id: message_out
+    description: Response sent to user at chain end
+    match:
+      event: "on_message_out"
+    behavior:
+      step_type: "step.message"
+      verb: "POST"
+      step_name: "{{ name | default('agent_response') }}"
+
+  # ── LLM / model inference ──────────────────────────────────────────────────
+
+  - id: llm_start
+    description: LLM inference call (completion-style)
+    match:
+      event: "on_llm_start"
+    behavior:
+      step_type: "step.model"
+      verb: "POST"
+      step_name: "{{ name | default('llm') }}"
+      properties:
+        model:
+          name: "{{ serialized.name | default('unknown') }}"
+
+  - id: chat_model_start
+    description: LLM inference call (chat-style)
+    match:
+      event: "on_chat_model_start"
+    behavior:
+      step_type: "step.model"
+      verb: "POST"
+      step_name: "{{ name | default('chat_model') }}"
+      properties:
+        model:
+          name: "{{ serialized.name | default('unknown') }}"
+
+  # ── Retrieval ──────────────────────────────────────────────────────────────
+
+  - id: retriever_start
+    description: Vector-store or document retrieval — read-only resource access
+    match:
+      event: "on_retriever_start"
+    behavior:
+      step_type: "step.resource"
+      verb: "GET"
+      step_name: "{{ name | default('retriever') }}"
+      properties:
+        target:
+          resource_type: "retriever"
+
+  # ── Tool calls — order matters: specific patterns before the catch-all ─────
+
+  # DEMO-SPECIFIC RULE: tag the invoice lookup as financial data. This is the
+  # single line that makes the path-dependent policy possible — it must come
+  # before the generic tool_read rule below (first-match-wins).
+  - id: tool_get_invoice
+    description: Invoice lookup — internal financial read (taint source)
+    match:
+      event: "on_tool_start"
+      name_pattern: "^get_invoice"
+    behavior:
+      step_type: "step.resource"
+      verb: "GET"
+      step_name: "{{ name }}"
+      properties:
+        target:
+          resource_type: "tool"
+        data:
+          classification: "financial"
+
+  - id: tool_read
+    description: Tool whose name signals a read / query operation
+    match:
+      event: "on_tool_start"
+      name_pattern: "^(search|fetch|read|get|list|query|retrieve|lookup|find|scan).*"
+    behavior:
+      step_type: "step.resource"
+      verb: "GET"
+      step_name: "{{ name }}"
+      properties:
+        target:
+          resource_type: "tool"
+
+  - id: tool_write
+    description: Tool whose name signals a write / mutation operation
+    match:
+      event: "on_tool_start"
+      name_pattern: "^(write|send|post|create|update|delete|remove|execute|run|call|patch|push|submit|upload).*"
+    behavior:
+      step_type: "step.resource"
+      verb: "POST"
+      step_name: "{{ name }}"
+      properties:
+        target:
+          resource_type: "tool"
+
+  - id: tool_default
+    description: Unclassified tool — treated as external resource GET
+    match:
+      event: "on_tool_start"
+    behavior:
+      step_type: "step.resource"
+      verb: "GET"
+      step_name: "{{ name | default('tool') }}"
+      properties:
+        target:
+          resource_type: "tool"
+
+  # ── Custom events ────────────────────────────────────────────────────────
+
+  - id: custom_event
+    description: Application-defined custom event (adispatch_custom_event)
+    match:
+      event: "on_custom_event"
+    behavior:
+      step_type: "step.unknown"
+      step_name: "{{ name | default('custom_event') }}"

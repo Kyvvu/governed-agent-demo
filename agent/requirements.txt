@@ -1,0 +1,17 @@
+# Governed Invoice / Expense assistant demo — Python dependencies.
+#
+# Modern LangChain (1.x) tool-calling agent via `langchain.agents.create_agent`
+# (LangGraph under the hood). No legacy `langchain-classic` shim.
+#
+# The Kyvvu SDK (`kyvvu`) and engine (`kyvvu-engine`) are installed separately
+# (editable in this monorepo, or from PyPI in a standalone checkout):
+#   pip install -e ../../kyvvu-sdk   # brings in kyvvu-engine
+# or:
+#   pip install kyvvu
+langchain>=1.0
+langchain-core>=1.0
+langgraph>=1.0
+# Optional: only needed to run against a real OpenAI model instead of the
+# deterministic mock LLM used for recording.
+langchain-openai>=0.2
+openai>=1.0.0
