@@ -42,9 +42,13 @@ assigned can be configured to do nothing until a policy grants it capabilities.
 ## Install
 
 ```bash
-pip install kyvvu                        # the Kyvvu SDK + engine
-pip install -r agent/requirements.txt    # LangChain / LangGraph for this demo
+python -m pip install kyvvu                        # the Kyvvu SDK + engine
+python -m pip install -r agent/requirements.txt    # LangChain / LangGraph for this demo
 ```
+
+> Use `python -m pip` (not bare `pip`) so the packages install into the same
+> interpreter you run the agent with — the usual fix for "installed, but
+> `ModuleNotFoundError` when I run it".
 
 Set your API key (and, if you self-host Kyvvu, your API URL):
 
@@ -167,7 +171,7 @@ wireframe you can copy for your own agent.
 │   ├── llm.py                               # the model
 │   ├── agent.py                             # the wiring (Kyvvu lives here)
 │   ├── main.py                              # the CLI
-│   ├── kyvvu-langgraph-demo.template.yaml   # event → behavior mapping
+│   ├── kyvvu-langgraph-demo.btmpl           # behavior template (event → behavior)
 │   └── requirements.txt
 └── policies/
     └── governed-demo.yaml                   # the policy manifest (two guardrails)
@@ -256,7 +260,7 @@ An interactive prompt (`python agent/main.py`) with a one-shot mode
 
 ### The behavior template — how actions are *described*
 
-File: `agent/kyvvu-langgraph-demo.template.yaml`
+File: `agent/kyvvu-langgraph-demo.btmpl`
 
 Frameworks emit low-level callbacks (`on_tool_start`, `on_chat_model_start`, …).
 Kyvvu doesn't govern those directly — it governs *behaviors*: `step.model`,

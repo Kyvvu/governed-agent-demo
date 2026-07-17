@@ -17,6 +17,10 @@
 # loaded (and KV_POLICY_FAIL_MODE=closed for deny-by-default before assignment),
 # the agent runs "almost catch-all allow, minus exactly what these rules catch".
 name: "Governed Demo Guard"
+description: >-
+  Two history-aware guardrails for the Invoice / Expense assistant demo:
+  block an external send after a financial invoice read (data-exfiltration
+  path block), and allow at most one send_email per task (single-send guard).
 version: "1.0.0"
 policies:
   - name: "Block external send after financial invoice read"

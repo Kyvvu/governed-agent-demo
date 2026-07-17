@@ -48,7 +48,10 @@ MODULE_VERSION = "2.0.0"
 AGENT_KEY = "governed-demo-agent"
 
 #: Path to the demo behavior template shipped alongside this module.
-TEMPLATE_PATH = Path(__file__).resolve().parent / "kyvvu-langgraph-demo.template.yaml"
+# Behavior template (YAML content). The `.btmpl` extension keeps it out of the
+# platform's manifest scanner (which only picks up .yaml/.yml) so it isn't
+# mistaken for an invalid policy manifest; the SDK loads it by explicit path.
+TEMPLATE_PATH = Path(__file__).resolve().parent / "kyvvu-langgraph-demo.btmpl"
 
 #: System prompt for the tool-calling agent.
 _SYSTEM_PROMPT = (
