@@ -1,0 +1,26 @@
+# Ruff config for the standalone video-demo agent.
+#
+# Purpose: pin the lint rule set so a future ruff upgrade (in CI or locally)
+# can't silently introduce new rules that re-break the publish-demo mirror.
+# There is no packaging file here, so a bare ruff.toml is the right home.
+#
+# The demo targets Python 3.12 (the publish-demo workflow uses python 3.12 and
+# agent.py uses `from __future__ import annotations`).
+target-version = "py312"
+
+[lint]
+# Explicit, deterministic rule set. Keep this list in sync with the fixes that
+# have been applied to agent/*.py:
+#   E   - pycodestyle errors
+#   F   - pyflakes (unused imports/names, etc.)
+#   I   - import sorting (isort)
+#   UP  - pyupgrade (modern typing: list/dict/tuple, X | None, collections.abc)
+#   ISC - implicit string concatenation (catch accidental/ambiguous joins)
+select = ["E", "F", "I", "UP", "ISC"]
+
+# E501 (line-too-long) is intentionally off: it is NOT in ruff's default rule
+# set, so it was never enforced on this demo, and some lines (e.g. long mock
+# reply strings, the api_key fallback chain) exceed 88 chars by design. Leaving
+# it on would flag pre-existing code and force cosmetic wrapping. `ruff format`
+# is the tool for line width; this config is only for the lint gate.
+ignore = ["E501"]

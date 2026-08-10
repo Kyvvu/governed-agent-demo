@@ -29,16 +29,13 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
-
-from langchain.agents import create_agent
-from langchain_core.messages import HumanMessage
 
 from kyvvu import Kyvvu
 from kyvvu.exceptions import KyvvuBlockedError
 from kyvvu.integrations.langgraph import KyvvuLangGraphHandler
 from kyvvu.schemas import Environment, RiskClassification
-
+from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage
 from llm import build_llm
 from tools import build_tools
 
@@ -116,13 +113,13 @@ class Verdict:
     """
 
     decision: str
-    answer: Optional[str] = None
-    scope: Optional[str] = None
-    step_type: Optional[str] = None
-    verb: Optional[str] = None
-    tool_name: Optional[str] = None
-    policy_name: Optional[str] = None
-    risk_score: Optional[float] = None
+    answer: str | None = None
+    scope: str | None = None
+    step_type: str | None = None
+    verb: str | None = None
+    tool_name: str | None = None
+    policy_name: str | None = None
+    risk_score: float | None = None
 
     def render(self) -> str:
         """Render a human-readable, multi-line verdict for the terminal.
@@ -130,7 +127,7 @@ class Verdict:
         Returns:
             A formatted string suitable for pausing on during a recording.
         """
-        lines: List[str] = []
+        lines: list[str] = []
         if self.decision == "allowed":
             lines.append("VERDICT: ALLOWED")
             if self.answer:
@@ -163,8 +160,8 @@ class InvoiceAgent:
 
     def __init__(
         self,
-        kyvvu_api_key: Optional[str] = None,
-        kyvvu_api_url: Optional[str] = None,
+        kyvvu_api_key: str | None = None,
+        kyvvu_api_url: str | None = None,
         environment: str = Environment.DEVELOPMENT,
         risk_classification: str = RiskClassification.HIGH,
     ) -> None:
@@ -270,7 +267,7 @@ class InvoiceAgent:
             return self._verdict_from_block(exc)
 
     @staticmethod
-    def _final_answer(result: dict) -> Optional[str]:
+    def _final_answer(result: dict) -> str | None:
         """Extract the agent's final answer text from the graph result.
 
         Args:

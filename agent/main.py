@@ -36,7 +36,6 @@ Google Python Style Guide: https://google.github.io/styleguide/pyguide.html
 from __future__ import annotations
 
 import sys
-from typing import List, Optional
 
 from agent import InvoiceAgent
 
@@ -95,7 +94,7 @@ def _repl(agent: InvoiceAgent) -> None:
         print(agent.run(request).render())
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """CLI entrypoint.
 
     With no arguments, starts the interactive prompt. With arguments, runs the
