@@ -28,7 +28,8 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Any
 
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import LanguageModelInput
@@ -48,7 +49,7 @@ def _mock_forced() -> bool:
 
 
 #: A single planned tool call: (tool_name, arguments).
-ToolStep = Tuple[str, Dict[str, Any]]
+ToolStep = tuple[str, dict[str, Any]]
 
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 _INVOICE_RE = re.compile(r"\b(INV[-\s]?\d+|[A-Z]{2,}-\d+)\b", re.IGNORECASE)
@@ -60,7 +61,7 @@ _SEND_WORDS = ("send", "forward", "email", "e-mail", "mail", "notify", "remind")
 _HANDBOOK_WORDS = ("policy", "handbook", "reimburs", "allowance", "guideline")
 
 
-def _extract_email(text: str) -> Optional[str]:
+def _extract_email(text: str) -> str | None:
     """Return the first email address in ``text``, or None."""
     m = _EMAIL_RE.search(text)
     return m.group(0) if m else None
@@ -162,9 +163,9 @@ class ScriptedToolCallingChatModel(BaseChatModel):
 
     def _generate(
         self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> ChatResult:
         """Produce the next scripted AI message for the current scenario.
@@ -214,7 +215,7 @@ class ScriptedToolCallingChatModel(BaseChatModel):
         return sum(1 for msg in messages if isinstance(msg, ToolMessage))
 
     @staticmethod
-    def _call(name: str, args: Dict[str, Any], index: int) -> AIMessage:
+    def _call(name: str, args: dict[str, Any], index: int) -> AIMessage:
         """Build an AIMessage that requests a single tool call.
 
         Args:
@@ -258,7 +259,7 @@ class ScriptedToolCallingChatModel(BaseChatModel):
         return AIMessage(content=final_answer)
 
     @staticmethod
-    def _plan(request: str) -> Tuple[List[ToolStep], str]:
+    def _plan(request: str) -> tuple[list[ToolStep], str]:
         """Turn a free-text request into a tool-call plan and a final answer.
 
         Deterministic keyword/regex routing over ``request`` (see the class
@@ -295,23 +296,21 @@ class ScriptedToolCallingChatModel(BaseChatModel):
             invoice_id = _extract_invoice_id(request)
             return (
                 [("get_invoice", {"invoice_id": invoice_id})],
-                f"Invoice {invoice_id}: Northwind Logistics, EUR 48,250.00, "
-                "approved for payment.",
+                f"Invoice {invoice_id}: Northwind Logistics, EUR 48,250.00, approved for payment.",
             )
 
         # Expense handbook lookup.
         if _has_handbook_intent(q):
             return (
                 [("search_finance_handbook", {"query": request})],
-                "Per the handbook, economy airfare and meals within the daily "
-                "caps are reimbursable; submit receipts within 30 days.",
+                "Per the handbook, economy airfare and meals within the daily caps are reimbursable; submit receipts within 30 days.",
             )
 
         # Send one or more emails (count inferred from the request).
         if _has_send_intent(q):
             to = recipient or "finance@acme.com"
             n = _requested_send_count(q)
-            steps: List[ToolStep] = [
+            steps: list[ToolStep] = [
                 ("send_email", {
                     "to": to,
                     "subject": f"Reminder {i + 1}" if n > 1 else "Message",
@@ -324,8 +323,7 @@ class ScriptedToolCallingChatModel(BaseChatModel):
         # Greeting / capability question / anything else → answer directly.
         return (
             [],
-            "I can look up the expense handbook, fetch invoice details, and "
-            "send emails on your behalf. What would you like to do?",
+            "I can look up the expense handbook, fetch invoice details, and send emails on your behalf. What would you like to do?",
         )
 
 

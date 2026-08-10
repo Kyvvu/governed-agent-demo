@@ -22,8 +22,6 @@ Google Python Style Guide: https://google.github.io/styleguide/pyguide.html
 """
 from __future__ import annotations
 
-from typing import List
-
 from langchain_core.tools import BaseTool, tool
 
 
@@ -97,7 +95,7 @@ def send_email(to: str, subject: str, body: str) -> str:
     return f"Email queued to {to or 'unknown'} with subject '{subject or '(none)'}'."
 
 
-def build_tools() -> List[BaseTool]:
+def build_tools() -> list[BaseTool]:
     """Return the three structured tools for the assistant.
 
     Returns:
