@@ -6,7 +6,7 @@ A small, self-contained, example of an AI agent governed at runtime by
 The demo agent is a
 finance assistant that can read an expense handbook, look up invoices (sensitive
 financial data), and send email. Kyvvu sits **in-process**, checking every step
-the agent takes *before* it runs and allowing or blocking it. Kyvvu does not sniff the wire; it cheks what the actions the harness executes.
+the agent takes *before* it runs and allowing or blocking it. Kyvvu does not sniff the wire; it checks the actions the harness executes.
 
 This repo is meant to be read and run end-to-end in a few minutes. Full product
 documentation lives at **[docs.kyvvu.com](https://docs.kyvvu.com)**, and the
@@ -67,9 +67,9 @@ connected Git repository, so your policies are versioned and audited as code.
 
 For this demo, you can simply connect this repo, and the Kyvvu platform will find the manifest in `policies/governed-demo.yaml`. You can do this by:
 
-1. Push this repo to your own GitHub account (fork or copy). Or, simply use this one, its public.
+1. Push this repo to your own GitHub account (fork or copy). Or, simply use this one, it's public.
 2. In the dashboard, open **Repositories → Connect repository**.
-3. Provide the repos url (and if private a PAT).
+3. Provide the repo's URL (and, if private, a PAT).
 
 Kyvvu can now see `policies/governed-demo.yaml` and offer it for assignment.
 
