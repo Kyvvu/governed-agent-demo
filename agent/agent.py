@@ -104,7 +104,8 @@ class Verdict:
         decision: ``"allowed"`` if the task completed, ``"blocked"`` if a
             policy blocked a step.
         answer: The agent's final answer (only set when allowed).
-        scope: Policy scope of the block (e.g. ``"step_execution"``).
+        enforcement_point: Policy enforcement point of the block (e.g.
+            ``"step_execution"``).
         step_type: Step type that was blocked (e.g. ``"step.resource"``).
         verb: Verb of the blocked step (e.g. ``"POST"``).
         tool_name: Name of the blocked step/tool, when known.
@@ -114,7 +115,7 @@ class Verdict:
 
     decision: str
     answer: str | None = None
-    scope: str | None = None
+    enforcement_point: str | None = None
     step_type: str | None = None
     verb: str | None = None
     tool_name: str | None = None
@@ -134,7 +135,7 @@ class Verdict:
                 lines.append(f"  answer      : {self.answer}")
         else:
             lines.append("VERDICT: BLOCKED")
-            lines.append(f"  scope       : {self.scope}")
+            lines.append(f"  enforcement : {self.enforcement_point}")
             lines.append(f"  step        : ({self.step_type}, {self.verb})")
             lines.append(f"  tool        : {self.tool_name}")
             lines.append(f"  policy      : {self.policy_name}")
@@ -323,7 +324,7 @@ class InvoiceAgent:
 
         return Verdict(
             decision="blocked",
-            scope="step_execution",
+            enforcement_point="step_execution",
             step_type=str(step_type) if step_type else "step.resource",
             verb=str(verb) if verb else "POST",
             tool_name=exc.step_name or None,
