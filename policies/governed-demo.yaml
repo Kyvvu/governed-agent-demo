@@ -33,7 +33,7 @@ policies:
       target_step_types: ["step.resource"]
       target_verb: POST
     severity: critical
-    scope: step_execution
+    enforcement_point: step_execution
   - name: "At most one external send per task"
     rule_type: execution_max_steps
     params:
@@ -41,4 +41,4 @@ policies:
       step_name: send_email
       max_steps: 1
     severity: critical
-    scope: step_execution
+    enforcement_point: step_execution
