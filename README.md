@@ -32,7 +32,7 @@ assigned can be configured to do nothing until a policy grants it capabilities.
 
 - **Python 3.11+**
 - **A Kyvvu account** — sign up at [platform.kyvvu.com](https://platform.kyvvu.com).
-- **A Kyvvu API key** — in the dashboard, open **Settings → API keys** and
+- **A Kyvvu API key** — in the dashboard, open **Workspace → API Keys** and
   generate one (it looks like `KvKey-…`). This is how the agent authenticates.
 - *(Optional)* an **OpenAI API key**, only if you want to drive the agent with a
   real model instead of the built-in deterministic mock.
